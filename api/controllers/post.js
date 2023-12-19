@@ -4,13 +4,13 @@ import { getCookie } from "./auth.js";
 
 
 export const getPosts = (req,res) => {
-    console.log('getposts')
-    const q = req.query.cat
-    ? "SELECT * FROM posts WHERE group=?"
-    : "SELECT p.id, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg FROM users u JOIN posts p ON u.id=p.userId";
+    console.log('getposts', req.query, req.params.group_name)
+    const q = req.params.group_name
+    ? "SELECT p.id, p.group_name, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg FROM users u JOIN posts p ON u.id=p.user_id WHERE p.group_name=?"
+    : "SELECT p.id, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg FROM users u JOIN posts p ON u.id=p.user_id WHERE is_global=1";
     
 
-    db.query(q,[req.query.group], (err,data)=>{
+    db.query(q,[req.params.group_name], (err,data)=>{
         if (err) return res.status(500).send(err);
 
         return res.status(200).json(data);
@@ -18,7 +18,7 @@ export const getPosts = (req,res) => {
 }
 
 export const getPost = (req,res) => {
-    const q = "SELECT p.id, `username`, `title`, `desc`, `content`, p.img, u.img AS userImg, `created_at` FROM users u JOIN posts p ON u.id=p.userId WHERE p.id = ?"
+    const q = "SELECT p.id, `username`, `title`, `desc`, `content`, p.img, u.img AS userImg, `created_at` FROM users u JOIN posts p ON u.id=p.user_id WHERE p.id = ?"
 
     db.query(q,[req.params.id], (err,data)=>{
         if (err) return res.status(500).json(err);
@@ -29,9 +29,8 @@ export const getPost = (req,res) => {
 
 export const getUserPosts = (req, res) => {
     const q = 
-    "SELECT p.id, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg FROM posts p JOIN users u ON p.userId=u.id WHERE userId=2"
-    // : "SELECT p.id, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg, `created_at` FROM users u JOIN posts p ON u.id=p.userId";
-    // console.log('getuserposts')
+    "SELECT p.id, `username`, `title`, `desc`, `content`, `created_at`, p.img, u.img AS userImg FROM posts p JOIN users u ON p.user_id=u.id WHERE user_id=?"
+    console.log('getuserposts', req.params)
     db.query(q,[req.params.id], (err,data)=>{
         if (err) return res.status(500).send(err);
 
@@ -49,14 +48,20 @@ export const addPost = (req,res) => {
     // jwt.verify(token,"jwtkey", (err, userInfo)=>{
     //     if(err) return res.status(403).json("Token is not valid!")
 
-        const q = "INSERT INTO posts (`title`, `desc`, `img`, `userId`) VALUES (?)"
+        const q = "INSERT INTO posts (`title`, `desc`, `content`, `img`, `user_id`, `created_at`, `group_id`, `group_name`, `is_global`) VALUES (?)"
 
         const values = [
             req.body.title,
             req.body.desc,
+            req.body.content,
             req.body.img,
             // userInfo.id
-            2
+            req.body.user_id,
+            req.body.created_at,
+            req.body.group_id,
+            req.body.group_name,
+            req.body.is_global
+
         ]
         db.query(q,[values], (err,data)=>{
             if (err) return res.status(500).json(err);
@@ -77,10 +82,10 @@ export const deletePost = (req,res) => {
     //     if(err) return res.status(403).json("Token is not valid!")
 
         const postId = req.params.id
-        const userId = req.body
+        const userId = 2 //
         console.log(req.cookies)
         console.log("postid,userid:", postId, userId)
-        const q = "DELETE FROM posts WHERE `id` = ? AND `userId` = ?"
+        const q = "DELETE FROM posts WHERE `id` = ? AND `user_id` = ?"
 
         db.query(q,[postId, userId], (err,data)=>{
             if(err) return res.status(403).json("You can delete only your post!")
