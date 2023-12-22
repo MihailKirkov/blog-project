@@ -16,12 +16,13 @@ export const updateUser = (req,res) => {
         req.body.email,
         req.body.first_name,
         req.body.last_name,
-        req.body.position
+        req.body.position,
+        req.body.img
     ]
     
     console.log("update user api :", values, userId)
     
-    const q = "UPDATE users u SET u.email=?, u.first_name=?, u.last_name=?, u.position=? WHERE u.id=?"
+    const q = "UPDATE users u SET u.email=?, u.first_name=?, u.last_name=?, u.position=?, u.img=? WHERE u.id=?"
 
     db.query(q,[...values, userId], (err,data) =>{
         if (err) return res.status(500).json(err);

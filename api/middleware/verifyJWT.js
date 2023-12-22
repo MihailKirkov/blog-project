@@ -3,15 +3,31 @@ import { db } from "../db.js"
 
 export const authUserRole = (permissions) => {
     return (req,res,next) => {
-        console.log(req.body)
-        console.log("checking if role allows access")
-        const userRole = "admin";
-        if (permissions.includes(userRole)) {
-            console.log("it does")
-            next();
-        } else {
-            return res.status(401).json("User Does Not Have Access")
-        }
+        const q = "SELECT u.role FROM users u WHERE u.id=?"
+        console.log("auth role:", req.params)
+        db.query(q, [req.params.user_id], (err,data) => {
+            if (err) {
+                console.error("Error verifying user role");
+                return res.status(401).json("Role verification issue!");
+            }
+            else {
+                try {
+                    const userRole= data[0].role
+                    // console.log("user role when checking:", userRole)
+
+                    if (permissions.includes(userRole)) {
+                        // console.log("has access")
+                        next();
+                    } else {
+                        return res.status(401).json("User Does Not Have Access")
+                    }
+                } catch(err) {
+                    console.error(err);
+                    return res.status(500).json("Error");
+                }
+            }
+        })
+        
     }
 }
 

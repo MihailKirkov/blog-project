@@ -13,9 +13,11 @@ export const register = (req, res) => {
   //CHECK EXISTING USER
   const q = "SELECT * FROM users WHERE email = ? OR username = ?";
 
+  if (req.body.email === '' || req.body.username === '' || req.body.first_name === '' || req.body.last_name === '' || req.body.password === '') return res.status(400).json("Please fill out all fields!")
+
   db.query(q, [req.body.email, req.body.username, req.body.first_name, req.body.last_name], (err, data) => {
     if (err) return res.status(500).json(err);
-    if (data.length) return res.status(409).json("User already exists!");
+    if (data.length) return res.status(409).json("username/email already exists!");
 
     //Hash the password and create a user
     const salt = bcrypt.genSaltSync(10);

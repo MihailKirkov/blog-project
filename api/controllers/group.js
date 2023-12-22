@@ -72,7 +72,7 @@ export const removeMember = (req, res) => {
 
 export const createGroup = (req, res) => {
     const q = "INSERT INTO `groups` (`name`) VALUES (?)"
-
+    console.log('create-ing group', req.params)
     const values = [
         req.params.group_name
     ]

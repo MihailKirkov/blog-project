@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.get("/:group_name", authGroupExists(), getPosts)
 router.get("/",  getPosts)
-router.get("/:id", getPost)
+router.get("/get_post/:id", getPost)
 router.get("/your_posts/:id", getUserPosts)
 router.post("/", addPost)
 router.delete("/:id", deletePost)
